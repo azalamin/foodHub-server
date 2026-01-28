@@ -1,10 +1,19 @@
+enum DietaryType {
+    NONE
+    VEGETARIAN
+    VEGAN
+    HALAL
+    GLUTEN_FREE
+}
+
 model Meal {
-    id          String  @id @default(uuid())
+    id          String      @id @default(uuid())
     name        String
     description String?
     price       Float
     imageUrl    String?
-    isAvailable Boolean @default(true)
+    dietaryType DietaryType @default(NONE)
+    isAvailable Boolean     @default(true)
 
     providerId String
     categoryId String

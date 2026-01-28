@@ -9,6 +9,7 @@ const createMeal: RequestHandler = async (req, res) => {
 				message: "Unauthorized access!",
 			});
 		}
+
 		const result = await mealService.createMeal(req.body, req.user.id as string);
 		res.status(201).json({
 			success: true,

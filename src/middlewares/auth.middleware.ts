@@ -15,31 +15,33 @@ export const authMiddleware = (...roles: UserRole[]) => {
 			});
 
 			if (!session) {
-				res.status(401).json({
+				return res.status(401).json({
 					success: false,
 					message: "You are not authorized!",
 				});
 			}
 
 			if (!session?.user.emailVerified) {
-				res.status(403).json({
+				return res.status(403).json({
 					success: false,
 					message: "Email verification required. Please verify your email!",
 				});
 			}
+
+			const userRole = session.user.role as UserRole;
 
 			req.user = {
 				id: session?.user.id!,
 				email: session?.user.email!,
 				emailVerified: session?.user.emailVerified as boolean,
 				name: session?.user.name!,
-				role: session?.user.role!,
+				role: userRole,
 			};
 
-			if (roles.length && !roles.includes(req.user.role as UserRole)) {
-				res.status(403).json({
+			if (roles.length && !roles.includes(userRole)) {
+				return res.status(403).json({
 					success: false,
-					message: "Forbidden! You do not have permission to access this resources!",
+					message: "Forbidden! You do not have permission to access this resource!",
 				});
 			}
 
