@@ -8,7 +8,12 @@ import { mealRoute } from "./modules/meal/meal.route";
 
 const app: Application = express();
 
-app.use(cors());
+app.use(
+	cors({
+		origin: process.env.APP_URL || "http://locaholhost:3000",
+		credentials: true,
+	}),
+);
 
 app.use(express.json());
 

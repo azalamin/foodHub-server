@@ -14,6 +14,7 @@ export const prisma = basePrisma.$extends({
 			create: async ({ args, query }) => {
 				const user = await query(args);
 				// console.log({ user, args, query });
+
 				// Auto-create ProviderProfile
 				if (user.role === UserRole.PROVIDER) {
 					const existingProfile = await basePrisma.providerProfile.findUnique({
