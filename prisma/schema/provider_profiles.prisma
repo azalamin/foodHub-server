@@ -7,7 +7,7 @@ model ProviderProfile {
     phone          String
     isOpen         Boolean @default(true)
 
-    user   User    @relation(fields: [userId], references: [id])
+    user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
     meals  Meal[]
     orders Order[]
 

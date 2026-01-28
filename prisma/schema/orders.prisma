@@ -15,8 +15,8 @@ model Order {
     customerId String
     providerId String
 
-    customer User            @relation("CustomerOrders", fields: [customerId], references: [id])
-    provider ProviderProfile @relation(fields: [providerId], references: [id])
+    customer User            @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: Cascade)
+    provider ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
     items  OrderItem[]
     review Review?

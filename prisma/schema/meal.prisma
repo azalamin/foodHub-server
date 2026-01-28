@@ -9,8 +9,8 @@ model Meal {
     providerId String
     categoryId String
 
-    provider   ProviderProfile @relation(fields: [providerId], references: [id])
-    category   Category        @relation(fields: [categoryId], references: [id])
+    provider   ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+    category   Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
     orderItems OrderItem[]
     reviews    Review[]
 
