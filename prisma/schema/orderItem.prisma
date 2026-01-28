@@ -9,4 +9,7 @@ model OrderItem {
 
     order Order @relation(fields: [orderId], references: [id])
     meal  Meal  @relation(fields: [mealId], references: [id])
+
+    @@index([id])
+    @@map("order-item")
 }

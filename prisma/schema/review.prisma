@@ -12,4 +12,7 @@ model Review {
     customer User  @relation(fields: [customerId], references: [id])
 
     createdAt DateTime @default(now())
+
+    @@index([id])
+    @@map("review")
 }
