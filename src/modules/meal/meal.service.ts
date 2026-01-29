@@ -64,6 +64,12 @@ const getAllMeals = async ({
 		where.isAvailable = isAvailable;
 	}
 
+	where.provider = {
+		user: {
+			status: "ACTIVE",
+		},
+	};
+
 	const meals = await prisma.meal.findMany({
 		where,
 		take: limit,
