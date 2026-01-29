@@ -13,7 +13,6 @@ export const prisma = basePrisma.$extends({
 		user: {
 			create: async ({ args, query }) => {
 				const user = await query(args);
-				// console.log({ user, args, query });
 
 				// Auto-create ProviderProfile
 				if (user.role === UserRole.PROVIDER) {
@@ -25,7 +24,7 @@ export const prisma = basePrisma.$extends({
 						await basePrisma.providerProfile.create({
 							data: {
 								userId: user.id,
-								restaurantName: "My Restaurant",
+								restaurantName: "",
 								address: "",
 								phone: "",
 								isOpen: true,
