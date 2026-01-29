@@ -5,6 +5,7 @@ const createMeal = async (
 	data: Omit<Meal, "id" | "createdAt" | "updatedAt" | "providerId">,
 	providerId: string,
 ) => {
+	console.log(providerId);
 	const result = await prisma.meal.create({
 		data: {
 			...data,
