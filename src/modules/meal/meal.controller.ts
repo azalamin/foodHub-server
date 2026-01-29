@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
-import { UserRole } from "../../../generated/prisma/enums";
+import { DietaryType, UserRole } from "../../../generated/prisma/enums";
+import paginationSortingHelper from "../../helpers/paginationSortingHelper";
 import { prisma } from "../../lib/prisma";
 import { mealService } from "./meal.service";
 
@@ -61,7 +62,56 @@ const getSingleMeal: RequestHandler = async (req, res) => {
 	}
 };
 
+const getAllMeals: RequestHandler = async (req, res) => {
+	try {
+		const search = typeof req.query.search === "string" ? req.query.search : undefined;
+
+		let isAvailable: boolean | undefined = undefined;
+		if (typeof req.query.isAvailable === "string") {
+			if (req.query.isAvailable === "true") isAvailable = true;
+			if (req.query.isAvailable === "false") isAvailable = false;
+		}
+
+		const providerId = typeof req.query.providerId === "string" ? req.query.providerId : undefined;
+
+		const categoryId = typeof req.query.categoryId === "string" ? req.query.categoryId : undefined;
+
+		const dietaryPreference =
+			typeof req.query.dietaryType === "string" &&
+			Object.values(DietaryType).includes(req.query.dietaryType as DietaryType)
+				? (req.query.dietaryType as DietaryType)
+				: undefined;
+
+		const { page, limit, skip, sortBy, sortOrder } = paginationSortingHelper(req.query);
+
+		const result = await mealService.getAllMeals({
+			search,
+			categoryId,
+			providerId,
+			dietaryPreference,
+			isAvailable,
+			page,
+			limit,
+			skip,
+			sortBy,
+			sortOrder,
+		});
+
+		res.status(200).json({
+			success: true,
+			data: result,
+		});
+	} catch (error) {
+		res.status(400).json({
+			success: false,
+			message: "Meal fetch failed",
+			error,
+		});
+	}
+};
+
 export const mealController = {
 	createMeal,
 	getSingleMeal,
+	getAllMeals,
 };
