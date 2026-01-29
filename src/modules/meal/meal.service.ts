@@ -15,6 +15,17 @@ const createMeal = async (
 	return result;
 };
 
+const getSingleMeal = async (id: string) => {
+	const result = await prisma.meal.findFirst({
+		where: {
+			id,
+		},
+	});
+
+	return result;
+};
+
 export const mealService = {
 	createMeal,
+	getSingleMeal,
 };

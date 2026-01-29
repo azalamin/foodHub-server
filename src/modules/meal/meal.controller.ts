@@ -44,6 +44,24 @@ const createMeal: RequestHandler = async (req, res) => {
 	}
 };
 
+const getSingleMeal: RequestHandler = async (req, res) => {
+	try {
+		const { mealId } = req.params;
+		const result = await mealService.getSingleMeal(mealId as string);
+
+		res.status(200).json({
+			success: true,
+			data: result,
+		});
+	} catch (error) {
+		res.status(400).json({
+			error: "Meal fetched failed",
+			details: error,
+		});
+	}
+};
+
 export const mealController = {
 	createMeal,
+	getSingleMeal,
 };
