@@ -18,6 +18,20 @@ const createOrder = async (customerId: string, payload: CreateOrderPayload) => {
 		throw new Error("Some meals are unavailable");
 	}
 
+	const uniqueProviderIds = new Set(meals.map(m => m.providerId));
+
+	if (uniqueProviderIds.size > 1) {
+		throw new Error("All meals must be from the same provider");
+	}
+
+	if (!uniqueProviderIds.has(payload.providerId)) {
+		throw new Error("Invalid provider for selected meals");
+	}
+
+	if (!payload.items || payload.items.length === 0) {
+		throw new Error("Order must contain at least one item");
+	}
+
 	const orderItemsData = payload.items.map(item => {
 		const meal = meals.find(m => m.id === item.mealId)!;
 		return {
