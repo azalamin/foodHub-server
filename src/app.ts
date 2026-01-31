@@ -4,6 +4,7 @@ import express, { Application } from "express";
 import cors from "cors";
 import { auth } from "./lib/auth";
 import errorHandler from "./middlewares/globalErrorHandler";
+import notFoundHandler from "./middlewares/notFoundHandler";
 import { categoryRoute } from "./modules/category/category.route";
 import { mealRoute } from "./modules/meal/meal.route";
 import { orderRoute } from "./modules/order/order.route";
@@ -22,6 +23,7 @@ app.use(
 
 app.use(express.json());
 
+// Better Auth
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.use("/api", mealRoute);
@@ -30,6 +32,8 @@ app.use("/api", providerRoute);
 app.use("/api", orderRoute);
 app.use("/api", reviewRoute);
 app.use("/api", userRoute);
+
+app.use(notFoundHandler);
 
 app.use(errorHandler);
 
