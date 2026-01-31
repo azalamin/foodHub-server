@@ -4,16 +4,17 @@ import { orderController } from "./order.controller";
 
 const router = Router();
 
+/* CUSTOMER */
 router.post("/orders", authMiddleware(UserRole.customer), orderController.createOrder);
-
 router.get("/orders", authMiddleware(UserRole.customer), orderController.getMyOrders);
-
 router.get("/orders/:orderId", authMiddleware(UserRole.customer), orderController.getSingleOrder);
-
 router.patch(
 	"/orders/:orderId/cancel",
 	authMiddleware(UserRole.customer),
 	orderController.cancelOrder,
 );
+
+/* ADMIN */
+router.get("/admin/orders", authMiddleware(UserRole.admin), orderController.getAllOrdersForAdmin);
 
 export const orderRoute = router;

@@ -145,9 +145,35 @@ const cancelOrder = async (customerId: string, orderId: string) => {
 	return cancelledOrder;
 };
 
+// Admin
+const getAllOrdersForAdmin = async () => {
+	return prisma.order.findMany({
+		include: {
+			customer: {
+				select: {
+					id: true,
+					name: true,
+					email: true,
+				},
+			},
+			provider: {
+				select: {
+					id: true,
+					restaurantName: true,
+				},
+			},
+			items: true,
+		},
+		orderBy: {
+			createdAt: "desc",
+		},
+	});
+};
+
 export const orderService = {
 	createOrder,
 	getMyOrders,
 	getSingleOrder,
 	cancelOrder,
+	getAllOrdersForAdmin,
 };

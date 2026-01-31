@@ -76,9 +76,24 @@ const cancelOrder: RequestHandler = catchAsync(async (req, res) => {
 	});
 });
 
+// Admin
+const getAllOrdersForAdmin: RequestHandler = async (req, res, next) => {
+	try {
+		const result = await orderService.getAllOrdersForAdmin();
+
+		res.status(200).json({
+			success: true,
+			data: result,
+		});
+	} catch (error) {
+		next(error);
+	}
+};
+
 export const orderController = {
 	createOrder,
 	getMyOrders,
 	getSingleOrder,
 	cancelOrder,
+	getAllOrdersForAdmin,
 };
