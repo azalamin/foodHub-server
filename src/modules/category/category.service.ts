@@ -1,15 +1,20 @@
 import { Category } from "../../../generated/prisma/client";
 import { AppError } from "../../errors/AppError";
+import slugify from "../../helpers/slugify";
 import { prisma } from "../../lib/prisma";
 
-const createCategory = async (data: Omit<Category, "id" | "createdAt" | "updatedAt" | "meals">) => {
-	if (!data.name || !data.slug) {
-		throw new AppError(400, "Category name and slug are required");
+const createCategory = async (
+	data: Omit<Category, "id" | "createdAt" | "updatedAt" | "meals" | "slug">,
+) => {
+	if (!data.name) {
+		throw new AppError(400, "Category name is required");
 	}
+
+	const slug = slugify(data.name);
 
 	const existingCategory = await prisma.category.findFirst({
 		where: {
-			OR: [{ name: data.name }, { slug: data.slug }],
+			OR: [{ name: data.name }, { slug }],
 		},
 	});
 
@@ -18,7 +23,10 @@ const createCategory = async (data: Omit<Category, "id" | "createdAt" | "updated
 	}
 
 	const result = await prisma.category.create({
-		data,
+		data: {
+			name: data.name,
+			slug,
+		},
 	});
 
 	return result;
@@ -34,7 +42,33 @@ const getAllCategories = async () => {
 	return result;
 };
 
+const updateCategory = async (categoryId: string, data: Partial<Category>) => {
+	if (!categoryId) {
+		throw new AppError(400, "Category ID is required");
+	}
+
+	const updateData: Partial<Category> = { ...data };
+
+	// Auto-update slug if name changes
+	if (data.name) {
+		updateData.slug = slugify(data.name);
+	}
+
+	return prisma.category.update({
+		where: { id: categoryId },
+		data: updateData,
+	});
+};
+
+const deleteCategory = async (categoryId: string) => {
+	return prisma.category.delete({
+		where: { id: categoryId },
+	});
+};
+
 export const categoryService = {
 	createCategory,
 	getAllCategories,
+	updateCategory,
+	deleteCategory,
 };

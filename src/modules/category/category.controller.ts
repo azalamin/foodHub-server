@@ -30,7 +30,31 @@ const getAllCategories: RequestHandler = catchAsync(async (req, res) => {
 	});
 });
 
+const updateCategory: RequestHandler = catchAsync(async (req, res) => {
+	const { categoryId } = req.params;
+
+	const result = await categoryService.updateCategory(categoryId as string, req.body);
+
+	res.status(200).json({
+		success: true,
+		data: result,
+	});
+});
+
+const deleteCategory: RequestHandler = catchAsync(async (req, res) => {
+	const { categoryId } = req.params;
+
+	const result = await categoryService.deleteCategory(categoryId as string);
+
+	res.status(200).json({
+		success: true,
+		data: result,
+	});
+});
+
 export const categoryController = {
 	createCategory,
 	getAllCategories,
+	updateCategory,
+	deleteCategory,
 };
