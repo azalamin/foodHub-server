@@ -8,6 +8,7 @@ import { mealRoute } from "./modules/meal/meal.route";
 import { orderRoute } from "./modules/order/order.route";
 import { providerRoute } from "./modules/provider/provider.route";
 import { reviewRoute } from "./modules/review/review.route";
+import errorHandler from "./middlewares/globalErrorHandler";
 
 const app: Application = express();
 
@@ -27,6 +28,8 @@ app.use("/api", categoryRoute);
 app.use("/api", providerRoute);
 app.use("/api", orderRoute);
 app.use("/api", reviewRoute);
+
+app.use(errorHandler);
 
 app.get("/", (req, res) => {
 	res.send("Hello, World!");

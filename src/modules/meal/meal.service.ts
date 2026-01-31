@@ -1,5 +1,6 @@
 import { Meal } from "../../../generated/prisma/client";
 import { MealWhereInput } from "../../../generated/prisma/models";
+import { AppError } from "../../errors/AppError";
 import { prisma } from "../../lib/prisma";
 import { GetMealsParams } from "../../types/meal.type";
 
@@ -7,7 +8,10 @@ const createMeal = async (
 	data: Omit<Meal, "id" | "createdAt" | "updatedAt" | "providerId">,
 	providerId: string,
 ) => {
-	console.log(providerId);
+	if (!providerId) {
+		throw new AppError(400, "Provider ID is required");
+	}
+
 	const result = await prisma.meal.create({
 		data: {
 			...data,
@@ -64,6 +68,7 @@ const getAllMeals = async ({
 		where.isAvailable = isAvailable;
 	}
 
+	// Only show meals from ACTIVE providers
 	where.provider = {
 		user: {
 			status: "ACTIVE",
@@ -93,13 +98,38 @@ const getAllMeals = async ({
 };
 
 const getSingleMeal = async (id: string) => {
-	const result = await prisma.meal.findFirst({
+	if (!id) {
+		throw new AppError(400, "Meal ID is required");
+	}
+
+	const meal = await prisma.meal.findFirst({
 		where: {
 			id,
+			provider: {
+				user: {
+					status: "ACTIVE",
+				},
+			},
+		},
+		include: {
+			provider: {
+				include: {
+					user: true,
+				},
+			},
 		},
 	});
 
-	return result;
+	if (!meal) {
+		throw new AppError(404, "Meal not found or not available");
+	}
+
+	// suspended provider's meal won't show
+	if (meal.provider.user.status === "SUSPENDED") {
+		throw new AppError(403, "This meal is not available");
+	}
+
+	return meal;
 };
 
 export const mealService = {
