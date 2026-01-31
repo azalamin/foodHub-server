@@ -54,6 +54,11 @@ const getAllUsers = async () => {
 			status: true,
 			createdAt: true,
 		},
+		where: {
+			role: {
+				in: ["CUSTOMER", "PROVIDER"],
+			},
+		},
 		orderBy: {
 			createdAt: "desc",
 		},
