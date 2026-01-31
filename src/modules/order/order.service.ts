@@ -1,8 +1,13 @@
 import { OrderStatus } from "../../../generated/prisma/enums";
+import { AppError } from "../../errors/AppError";
 import { prisma } from "../../lib/prisma";
 import { CreateOrderPayload } from "../../types/order.type";
 
 const createOrder = async (customerId: string, payload: CreateOrderPayload) => {
+	if (!payload.items || payload.items.length === 0) {
+		throw new AppError(400, "Order must contain at least one item");
+	}
+
 	const meals = await prisma.meal.findMany({
 		where: {
 			id: { in: payload.items.map(i => i.mealId) },
@@ -15,21 +20,17 @@ const createOrder = async (customerId: string, payload: CreateOrderPayload) => {
 	});
 
 	if (meals.length !== payload.items.length) {
-		throw new Error("Some meals are unavailable");
+		throw new AppError(400, "Some meals are unavailable");
 	}
 
 	const uniqueProviderIds = new Set(meals.map(m => m.providerId));
 
 	if (uniqueProviderIds.size > 1) {
-		throw new Error("All meals must be from the same provider");
+		throw new AppError(400, "All meals must be from the same provider");
 	}
 
 	if (!uniqueProviderIds.has(payload.providerId)) {
-		throw new Error("Invalid provider for selected meals");
-	}
-
-	if (!payload.items || payload.items.length === 0) {
-		throw new Error("Order must contain at least one item");
+		throw new AppError(400, "Invalid provider for selected meals");
 	}
 
 	const orderItemsData = payload.items.map(item => {
@@ -49,7 +50,7 @@ const createOrder = async (customerId: string, payload: CreateOrderPayload) => {
 			customerId,
 			providerId: payload.providerId,
 			deliveryAddress: payload.deliveryAddress,
-			status: "PLACED",
+			status: OrderStatus.PLACED,
 			totalPrice,
 			items: {
 				create: orderItemsData,
@@ -64,6 +65,10 @@ const createOrder = async (customerId: string, payload: CreateOrderPayload) => {
 };
 
 const getMyOrders = async (userId: string) => {
+	if (!userId) {
+		throw new AppError(401, "Unauthorized access");
+	}
+
 	return prisma.order.findMany({
 		where: {
 			customerId: userId,
@@ -82,7 +87,11 @@ const getMyOrders = async (userId: string) => {
 };
 
 const getSingleOrder = async (userId: string, orderId: string) => {
-	return prisma.order.findFirst({
+	if (!orderId) {
+		throw new AppError(400, "Order ID is required");
+	}
+
+	const order = await prisma.order.findFirst({
 		where: {
 			id: orderId,
 			customerId: userId,
@@ -96,9 +105,19 @@ const getSingleOrder = async (userId: string, orderId: string) => {
 			provider: true,
 		},
 	});
+
+	if (!order) {
+		throw new AppError(404, "Order not found");
+	}
+
+	return order;
 };
 
 const cancelOrder = async (customerId: string, orderId: string) => {
+	if (!orderId) {
+		throw new AppError(400, "Order ID is required");
+	}
+
 	const order = await prisma.order.findFirst({
 		where: {
 			id: orderId,
@@ -107,11 +126,11 @@ const cancelOrder = async (customerId: string, orderId: string) => {
 	});
 
 	if (!order) {
-		throw new Error("Order not found");
+		throw new AppError(404, "Order not found");
 	}
 
 	if (order.status !== OrderStatus.PLACED) {
-		throw new Error("Order cannot be cancelled at this stage");
+		throw new AppError(400, "Order cannot be cancelled at this stage");
 	}
 
 	const cancelledOrder = await prisma.order.update({
