@@ -1,8 +1,14 @@
 import { Meal, OrderStatus, ProviderProfile } from "../../../generated/prisma/client";
+import { AppError } from "../../errors/AppError";
 import { prisma } from "../../lib/prisma";
 
 // ------------------- PROFILE ------------------------
+
 const getMyProfile = async (userId: string) => {
+	if (!userId) {
+		throw new AppError(401, "Unauthorized access");
+	}
+
 	const profile = await prisma.providerProfile.findFirst({
 		where: {
 			userId,
@@ -12,16 +18,24 @@ const getMyProfile = async (userId: string) => {
 		},
 	});
 
+	if (!profile) {
+		throw new AppError(404, "Provider profile not found");
+	}
+
 	return profile;
 };
 
 const updateMyProfile = async (userId: string, data: Partial<ProviderProfile>) => {
+	if (!userId) {
+		throw new AppError(401, "Unauthorized access");
+	}
+
 	const profile = await prisma.providerProfile.findFirst({
 		where: { userId },
 	});
 
 	if (!profile) {
-		throw new Error("Provider profile not found");
+		throw new AppError(404, "Provider profile not found");
 	}
 
 	const updated = await prisma.providerProfile.update({
@@ -35,6 +49,10 @@ const updateMyProfile = async (userId: string, data: Partial<ProviderProfile>) =
 };
 
 const getProviderProfileWithMeals = async (providerId: string) => {
+	if (!providerId) {
+		throw new AppError(400, "Provider ID is required");
+	}
+
 	const provider = await prisma.providerProfile.findFirst({
 		where: {
 			id: providerId,
@@ -55,10 +73,20 @@ const getProviderProfileWithMeals = async (providerId: string) => {
 		},
 	});
 
+	if (!provider) {
+		throw new AppError(404, "Provider not found or not available");
+	}
+
 	return provider;
 };
 
+// ------------------- ORDERS ------------------------
+
 const getIncomingOrders = async (providerId: string) => {
+	if (!providerId) {
+		throw new AppError(400, "Provider ID is required");
+	}
+
 	return prisma.order.findMany({
 		where: {
 			providerId,
@@ -76,9 +104,13 @@ const getIncomingOrders = async (providerId: string) => {
 	});
 };
 
-// ---------- MENU ----------
+// ------------------- MENU ------------------------
 
 const updateMeal = async (providerId: string, mealId: string, data: Partial<Meal>) => {
+	if (!providerId || !mealId) {
+		throw new AppError(400, "Provider ID and Meal ID are required");
+	}
+
 	const meal = await prisma.meal.findFirst({
 		where: {
 			id: mealId,
@@ -87,7 +119,7 @@ const updateMeal = async (providerId: string, mealId: string, data: Partial<Meal
 	});
 
 	if (!meal) {
-		throw new Error("Meal not found or unauthorized");
+		throw new AppError(404, "Meal not found or unauthorized");
 	}
 
 	return prisma.meal.update({
@@ -97,6 +129,10 @@ const updateMeal = async (providerId: string, mealId: string, data: Partial<Meal
 };
 
 const deleteMeal = async (providerId: string, mealId: string) => {
+	if (!providerId || !mealId) {
+		throw new AppError(400, "Provider ID and Meal ID are required");
+	}
+
 	const meal = await prisma.meal.findFirst({
 		where: {
 			id: mealId,
@@ -105,7 +141,7 @@ const deleteMeal = async (providerId: string, mealId: string) => {
 	});
 
 	if (!meal) {
-		throw new Error("Meal not found or unauthorized");
+		throw new AppError(404, "Meal not found or unauthorized");
 	}
 
 	return prisma.meal.delete({
@@ -113,8 +149,13 @@ const deleteMeal = async (providerId: string, mealId: string) => {
 	});
 };
 
-// ---------- UPDATE ORDER STATUS ----------
+// ------------------- UPDATE ORDER STATUS ------------------------
+
 const updateOrderStatus = async (providerId: string, orderId: string, newStatus: OrderStatus) => {
+	if (!providerId || !orderId) {
+		throw new AppError(400, "Provider ID and Order ID are required");
+	}
+
 	const order = await prisma.order.findFirst({
 		where: {
 			id: orderId,
@@ -123,11 +164,11 @@ const updateOrderStatus = async (providerId: string, orderId: string, newStatus:
 	});
 
 	if (!order) {
-		throw new Error("Order not found or unauthorized");
+		throw new AppError(404, "Order not found or unauthorized");
 	}
 
 	if (order.status === newStatus) {
-		throw new Error("Already order status updated!");
+		throw new AppError(400, "Order status already updated");
 	}
 
 	const validTransitions: Record<OrderStatus, OrderStatus[]> = {
@@ -139,7 +180,7 @@ const updateOrderStatus = async (providerId: string, orderId: string, newStatus:
 	};
 
 	if (!validTransitions[order.status].includes(newStatus)) {
-		throw new Error("Invalid order status transition");
+		throw new AppError(400, "Invalid order status transition");
 	}
 
 	return prisma.order.update({
