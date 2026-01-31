@@ -1,9 +1,10 @@
 import { OrderStatus } from "../../../generated/prisma/enums";
+import { AppError } from "../../errors/AppError";
 import { prisma } from "../../lib/prisma";
 import { CreateReviewPayload } from "../../types/review.type";
 
 const createReview = async (customerId: string, payload: CreateReviewPayload) => {
-	// Validate order
+	// Validate order ownership
 	const order = await prisma.order.findFirst({
 		where: {
 			id: payload.orderId,
@@ -15,22 +16,22 @@ const createReview = async (customerId: string, payload: CreateReviewPayload) =>
 	});
 
 	if (!order) {
-		throw new Error("Order not found");
+		throw new AppError(404, "Order not found");
 	}
 
 	// Order must be delivered
 	if (order.status !== OrderStatus.DELIVERED) {
-		throw new Error("You can only review delivered orders");
+		throw new AppError(400, "You can only review delivered orders");
 	}
 
 	// Meal must belong to this order
 	const mealInOrder = order.items.find(item => item.mealId === payload.mealId);
 
 	if (!mealInOrder) {
-		throw new Error("Meal not found in this order");
+		throw new AppError(400, "Meal not found in this order");
 	}
 
-	// Prevent duplicate review (extra safety)
+	// Prevent duplicate review per order
 	const existingReview = await prisma.review.findUnique({
 		where: {
 			orderId: payload.orderId,
@@ -38,7 +39,7 @@ const createReview = async (customerId: string, payload: CreateReviewPayload) =>
 	});
 
 	if (existingReview) {
-		throw new Error("Review already submitted for this order");
+		throw new AppError(409, "Review already submitted for this order");
 	}
 
 	// Create review

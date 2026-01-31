@@ -3,12 +3,13 @@ import express, { Application } from "express";
 
 import cors from "cors";
 import { auth } from "./lib/auth";
+import errorHandler from "./middlewares/globalErrorHandler";
 import { categoryRoute } from "./modules/category/category.route";
 import { mealRoute } from "./modules/meal/meal.route";
 import { orderRoute } from "./modules/order/order.route";
 import { providerRoute } from "./modules/provider/provider.route";
 import { reviewRoute } from "./modules/review/review.route";
-import errorHandler from "./middlewares/globalErrorHandler";
+import { userRoute } from "./modules/user/user.route";
 
 const app: Application = express();
 
@@ -28,6 +29,7 @@ app.use("/api", categoryRoute);
 app.use("/api", providerRoute);
 app.use("/api", orderRoute);
 app.use("/api", reviewRoute);
+app.use("/api", userRoute);
 
 app.use(errorHandler);
 
