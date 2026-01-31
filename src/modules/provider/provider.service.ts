@@ -4,6 +4,19 @@ import { prisma } from "../../lib/prisma";
 
 // ------------------- PROFILE ------------------------
 
+const getAllProviders = async () => {
+	const result = await prisma.providerProfile.findFirst({
+		where: {
+			isOpen: true,
+			user: {
+				status: "ACTIVE",
+			},
+		},
+	});
+
+	return result;
+};
+
 const getMyProfile = async (userId: string) => {
 	if (!userId) {
 		throw new AppError(401, "Unauthorized access");
@@ -190,6 +203,7 @@ const updateOrderStatus = async (providerId: string, orderId: string, newStatus:
 };
 
 export const providerService = {
+	getAllProviders,
 	getMyProfile,
 	updateMyProfile,
 	getProviderProfileWithMeals,
