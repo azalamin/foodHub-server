@@ -7,6 +7,7 @@ const router = Router();
 /* ---------- CUSTOMER / PROVIDER ---------- */
 router.get("/users/me", authMiddleware(), userController.getMyProfile);
 router.patch("/users/me", authMiddleware(), userController.updateMyProfile);
+router.patch("/users/:userId/role", userController.updateUserRoleToProvider);
 
 /* --------------- ADMIN ------------------- */
 router.get("/users/admin/users", authMiddleware(UserRole.admin), userController.getAllUsers);

@@ -1,4 +1,4 @@
-import { UserStatus } from "../../../generated/prisma/enums";
+import { UserRole, UserStatus } from "../../../generated/prisma/enums";
 import { AppError } from "../../errors/AppError";
 import { prisma } from "../../lib/prisma";
 
@@ -84,9 +84,31 @@ const updateUserStatus = async (userId: string, status: UserStatus) => {
 	});
 };
 
+const updateUserRoleToProvider = async (userId: string, role: UserRole) => {
+	const user = await prisma.user.findUnique({
+		where: { id: userId },
+	});
+
+	if (!user) {
+		throw new AppError(404, "User not found");
+	}
+
+	if (role === UserRole.PROVIDER) {
+		const updatedUser = await prisma.user.update({
+			where: { id: userId },
+			data: {
+				role: UserRole.PROVIDER,
+			},
+		});
+
+		return updatedUser;
+	}
+};
+
 export const userService = {
 	getMyProfile,
 	updateMyProfile,
 	getAllUsers,
 	updateUserStatus,
+	updateUserRoleToProvider,
 };
