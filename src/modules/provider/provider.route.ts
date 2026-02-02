@@ -4,6 +4,8 @@ import { providerController } from "./provider.controller";
 
 const router = Router();
 
+router.post("/providers", providerController.createProvider);
+
 router.get("/providers", providerController.getAllProviders);
 
 router.get("/provider/me", authMiddleware(UserRole.provider), providerController.getMyProfile);

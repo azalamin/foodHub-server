@@ -4,6 +4,34 @@ import { prisma } from "../../lib/prisma";
 
 // ------------------- PROFILE ------------------------
 
+// Auto Create Provider when user created with role Provider
+const createProvider = async (id: string) => {
+	if (!id) {
+		throw new AppError(401, "Unauthorized access");
+	}
+
+	const user = await prisma.user.findFirst({
+		where: { id },
+	});
+
+	if (!user) {
+		throw new AppError(404, "Provider profile not found");
+	}
+
+	const result = await prisma.providerProfile.create({
+		data: {
+			userId: user.id,
+			isOpen: true,
+			restaurantName: "",
+			description: "",
+			address: "",
+			phone: "",
+		},
+	});
+
+	return result;
+};
+
 const getAllProviders = async () => {
 	const result = await prisma.providerProfile.findFirst({
 		where: {
@@ -203,6 +231,7 @@ const updateOrderStatus = async (providerId: string, orderId: string, newStatus:
 };
 
 export const providerService = {
+	createProvider,
 	getAllProviders,
 	getMyProfile,
 	updateMyProfile,

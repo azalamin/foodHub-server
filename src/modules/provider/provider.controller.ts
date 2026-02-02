@@ -5,6 +5,15 @@ import { prisma } from "../../lib/prisma";
 import { catchAsync } from "../../utils/catchAsync";
 import { providerService } from "./provider.service";
 
+const createProvider: RequestHandler = catchAsync(async (req, res) => {
+	const result = await providerService.createProvider(req.body);
+
+	res.status(200).json({
+		success: true,
+		data: result,
+	});
+});
+
 const getAllProviders: RequestHandler = catchAsync(async (req, res) => {
 	const result = await providerService.getAllProviders();
 
@@ -179,6 +188,7 @@ const deleteMeal: RequestHandler = catchAsync(async (req, res) => {
 });
 
 export const providerController = {
+	createProvider,
 	getAllProviders,
 	getMyProfile,
 	updateMyProfile,
