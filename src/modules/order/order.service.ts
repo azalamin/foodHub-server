@@ -1,11 +1,21 @@
 import { OrderStatus } from "../../../generated/prisma/enums";
+import { orderConfirmationEmail } from "../../emails/orderConfirmation";
 import { AppError } from "../../errors/AppError";
+import { transporter } from "../../lib/mailer";
 import { prisma } from "../../lib/prisma";
 import { CreateOrderPayload } from "../../types/order.type";
 
-const createOrder = async (customerId: string, payload: CreateOrderPayload) => {
+const createOrder = async (userId: string, payload: CreateOrderPayload) => {
 	if (!payload.items || payload.items.length === 0) {
 		throw new AppError(400, "Order must contain at least one item");
+	}
+
+	const user = await prisma.user.findUnique({
+		where: { id: userId },
+	});
+
+	if (!user) {
+		throw new AppError(401, "User not found");
 	}
 
 	const meals = await prisma.meal.findMany({
@@ -17,20 +27,16 @@ const createOrder = async (customerId: string, payload: CreateOrderPayload) => {
 				user: { status: "ACTIVE" },
 			},
 		},
+		include: {
+			provider: true,
+		},
 	});
 
-	if (meals.length !== payload.items.length) {
-		throw new AppError(400, "Some meals are unavailable");
-	}
+	const providerId = meals[0]!.providerId;
+	const uniqueProviders = new Set(meals.map(m => m.providerId));
 
-	const uniqueProviderIds = new Set(meals.map(m => m.providerId));
-
-	if (uniqueProviderIds.size > 1) {
-		throw new AppError(400, "All meals must be from the same provider");
-	}
-
-	if (!uniqueProviderIds.has(payload.providerId)) {
-		throw new AppError(400, "Invalid provider for selected meals");
+	if (uniqueProviders.size > 1) {
+		throw new AppError(400, "Meals must be from a single provider");
 	}
 
 	const orderItemsData = payload.items.map(item => {
@@ -47,8 +53,8 @@ const createOrder = async (customerId: string, payload: CreateOrderPayload) => {
 
 	const order = await prisma.order.create({
 		data: {
-			customerId,
-			providerId: payload.providerId,
+			customerId: user.id,
+			providerId,
 			deliveryAddress: payload.deliveryAddress,
 			status: OrderStatus.PLACED,
 			totalPrice,
@@ -60,6 +66,18 @@ const createOrder = async (customerId: string, payload: CreateOrderPayload) => {
 			items: true,
 		},
 	});
+
+	// Send email safely
+	if (user.email) {
+		await transporter.sendMail(
+			orderConfirmationEmail({
+				email: user.email,
+				orderId: order.id,
+				totalPrice: order.totalPrice,
+				address: order.deliveryAddress,
+			}),
+		);
+	}
 
 	return order;
 };

@@ -2,6 +2,7 @@ import { toNodeHandler } from "better-auth/node";
 import express, { Application } from "express";
 
 import cors from "cors";
+import "dotenv/config";
 import { auth } from "./lib/auth";
 import errorHandler from "./middlewares/globalErrorHandler";
 import notFoundHandler from "./middlewares/notFoundHandler";
