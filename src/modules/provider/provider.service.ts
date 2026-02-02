@@ -33,7 +33,7 @@ const createProvider = async (id: string) => {
 };
 
 const getAllProviders = async () => {
-	const result = await prisma.providerProfile.findFirst({
+	const result = await prisma.providerProfile.findMany({
 		where: {
 			isOpen: true,
 			user: {
