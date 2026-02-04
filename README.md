@@ -5,6 +5,8 @@
 [![Express.js](https://img.shields.io/badge/Express.js-5.0-000000?style=for-the-badge&logo=express)](https://expressjs.com/)
 [![Prisma](https://img.shields.io/badge/Prisma-7.3-2D3748?style=for-the-badge&logo=prisma)](https://www.prisma.io/)
 
+## [Explanation Video](https://drive.google.com/file/d/1-n7CXgJ05I44VifH7hKICdp587Y7-ANc/view?usp=sharing)
+
 The high-performance engine powering the **FoodHub** marketplace. This backend is built with **Express 5**, **TypeScript**, and **Prisma ORM**, utilizing a modular design for maximum scalability and maintainability.
 
 ---
