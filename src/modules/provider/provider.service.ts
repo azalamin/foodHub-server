@@ -131,7 +131,6 @@ const getIncomingOrders = async (providerId: string) => {
 	return prisma.order.findMany({
 		where: {
 			providerId,
-			status: OrderStatus.PLACED,
 		},
 		include: {
 			items: {
