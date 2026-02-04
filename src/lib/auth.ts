@@ -42,6 +42,28 @@ export const auth = betterAuth({
 		enabled: true,
 		autoSignIn: false,
 		requireEmailVerification: true,
+		sendResetPassword: async ({ user, url }) => {
+			await transporter.sendMail({
+				from: '"FoodHub Security" <auth@foodhub.com>',
+				to: user.email,
+				subject: "Reset your FoodHub Password",
+				html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 16px; overflow: hidden;">
+          <div style="background: #16a34a; padding: 20px; text-align: center;">
+            <h1 style="color: white; margin: 0;">FoodHub</h1>
+          </div>
+          <div style="padding: 40px 20px; text-align: center;">
+            <h2 style="color: #111827;">Password Reset Request</h2>
+            <p style="color: #4b5563; line-height: 1.6;">Hi ${user.name}, we received a request to reset your password. Click the button below to set a new one.</p>
+            <div style="margin: 30px 0;">
+              <a href="${url}" style="background: #16a34a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">Reset Password</a>
+            </div>
+            <p style="color: #9ca3af; font-size: 12px;">This link will expire in 1 hour. If you didn't request this, you can safely ignore this email.</p>
+          </div>
+        </div>
+        `,
+			});
+		},
 	},
 
 	emailVerification: {
