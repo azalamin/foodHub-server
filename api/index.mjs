@@ -327,7 +327,7 @@ var auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql"
   }),
-  trustedOrigins: [process.env.APP_URL],
+  trustedOrigins: [process.env.APP_URL, "https://foodhubbd.vercel.app"],
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID,

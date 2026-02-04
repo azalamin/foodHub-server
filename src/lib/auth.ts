@@ -8,7 +8,7 @@ export const auth = betterAuth({
 		provider: "postgresql",
 	}),
 
-	trustedOrigins: [process.env.APP_URL!, "https://foodhubbd.vercel.app/"],
+	trustedOrigins: [process.env.APP_URL!],
 
 	socialProviders: {
 		google: {
