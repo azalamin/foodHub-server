@@ -16,5 +16,10 @@ router.patch(
 
 /* ADMIN */
 router.get("/admin/orders", authMiddleware(UserRole.admin), orderController.getAllOrdersForAdmin);
+router.patch(
+	"/admin/orders/:orderId/status",
+	authMiddleware(UserRole.admin),
+	orderController.updateOrderStatus,
+);
 
 export const orderRoute = router;

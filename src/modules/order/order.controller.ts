@@ -86,10 +86,31 @@ const getAllOrdersForAdmin: RequestHandler = catchAsync(async (_req, res) => {
 	});
 });
 
+const updateOrderStatus: RequestHandler = catchAsync(async (req, res) => {
+	if (!req.user) {
+		throw new AppError(401, "Unauthorized");
+	}
+
+	const { orderId } = req.params;
+	const { status } = req.body;
+
+	if (!orderId || !status) {
+		throw new AppError(400, "Order ID and status are required");
+	}
+
+	const result = await orderService.updateOrderStatus(orderId as string, status);
+
+	res.status(200).json({
+		success: true,
+		data: result,
+	});
+});
+
 export const orderController = {
 	createOrder,
 	getMyOrders,
 	getSingleOrder,
 	cancelOrder,
 	getAllOrdersForAdmin,
+	updateOrderStatus,
 };

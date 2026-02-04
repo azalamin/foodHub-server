@@ -188,10 +188,48 @@ const getAllOrdersForAdmin = async () => {
 	});
 };
 
+const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
+	if (!orderId) {
+		throw new AppError(400, "Provider ID and Order ID are required");
+	}
+
+	const order = await prisma.order.findFirst({
+		where: {
+			id: orderId,
+		},
+	});
+
+	if (!order) {
+		throw new AppError(404, "Order not found or unauthorized");
+	}
+
+	if (order.status === newStatus) {
+		throw new AppError(400, "Order status already updated");
+	}
+
+	const validTransitions: Record<OrderStatus, OrderStatus[]> = {
+		PLACED: [OrderStatus.PREPARING],
+		PREPARING: [OrderStatus.READY],
+		READY: [OrderStatus.DELIVERED],
+		DELIVERED: [],
+		CANCELLED: [],
+	};
+
+	if (!validTransitions[order.status].includes(newStatus)) {
+		throw new AppError(400, "Invalid order status transition");
+	}
+
+	return prisma.order.update({
+		where: { id: orderId },
+		data: { status: newStatus },
+	});
+};
+
 export const orderService = {
 	createOrder,
 	getMyOrders,
 	getSingleOrder,
 	cancelOrder,
 	getAllOrdersForAdmin,
+	updateOrderStatus,
 };
