@@ -225,6 +225,23 @@ const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
 	});
 };
 
+const cancelOrderByAdmin = async (orderId: string) => {
+	if (!orderId) {
+		throw new AppError(400, "Order ID is required");
+	}
+
+	const cancelledOrder = await prisma.order.update({
+		where: {
+			id: orderId,
+		},
+		data: {
+			status: OrderStatus.CANCELLED,
+		},
+	});
+
+	return cancelledOrder;
+};
+
 export const orderService = {
 	createOrder,
 	getMyOrders,
@@ -232,4 +249,5 @@ export const orderService = {
 	cancelOrder,
 	getAllOrdersForAdmin,
 	updateOrderStatus,
+	cancelOrderByAdmin,
 };

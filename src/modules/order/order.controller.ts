@@ -106,6 +106,25 @@ const updateOrderStatus: RequestHandler = catchAsync(async (req, res) => {
 	});
 });
 
+const cancelOrderByAdmin: RequestHandler = catchAsync(async (req, res) => {
+	if (!req.user) {
+		throw new AppError(401, "Unauthorized access");
+	}
+
+	const { orderId } = req.params;
+
+	if (!orderId) {
+		throw new AppError(400, "Order ID is required");
+	}
+
+	const result = await orderService.cancelOrderByAdmin(orderId as string);
+
+	res.status(200).json({
+		success: true,
+		data: result,
+	});
+});
+
 export const orderController = {
 	createOrder,
 	getMyOrders,
@@ -113,4 +132,5 @@ export const orderController = {
 	cancelOrder,
 	getAllOrdersForAdmin,
 	updateOrderStatus,
+	cancelOrderByAdmin,
 };

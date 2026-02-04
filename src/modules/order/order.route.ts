@@ -21,5 +21,10 @@ router.patch(
 	authMiddleware(UserRole.admin),
 	orderController.updateOrderStatus,
 );
+router.patch(
+	"/admin/orders/:orderId/cancel",
+	authMiddleware(UserRole.admin),
+	orderController.cancelOrderByAdmin,
+);
 
 export const orderRoute = router;
