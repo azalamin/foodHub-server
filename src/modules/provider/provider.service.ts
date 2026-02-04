@@ -131,6 +131,33 @@ const getIncomingOrders = async (providerId: string) => {
 	return prisma.order.findMany({
 		where: {
 			providerId,
+			status: {
+				in: [OrderStatus.PLACED, OrderStatus.PREPARING, OrderStatus.READY],
+			},
+		},
+		include: {
+			items: {
+				include: { meal: true },
+			},
+			customer: true,
+		},
+		orderBy: {
+			createdAt: "desc",
+		},
+	});
+};
+
+const getProviderAllOrders = async (providerId: string) => {
+	if (!providerId) {
+		throw new AppError(400, "Provider ID is required");
+	}
+
+	return prisma.order.findMany({
+		where: {
+			providerId,
+			status: {
+				in: [OrderStatus.CANCELLED, OrderStatus.DELIVERED],
+			},
 		},
 		include: {
 			items: {
@@ -239,4 +266,5 @@ export const providerService = {
 	deleteMeal,
 	getIncomingOrders,
 	updateOrderStatus,
+	getProviderAllOrders,
 };

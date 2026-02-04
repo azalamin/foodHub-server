@@ -93,6 +93,31 @@ const getIncomingOrders: RequestHandler = catchAsync(async (req, res) => {
 	});
 });
 
+const getProviderAllOrders: RequestHandler = catchAsync(async (req, res) => {
+	if (!req.user) {
+		throw new AppError(401, "Unauthorized");
+	}
+
+	if (req.user.role !== UserRole.PROVIDER) {
+		throw new AppError(403, "Only providers can view orders");
+	}
+
+	const provider = await prisma.providerProfile.findFirst({
+		where: { userId: req.user.id },
+	});
+
+	if (!provider) {
+		throw new AppError(404, "Provider profile not found");
+	}
+
+	const result = await providerService.getProviderAllOrders(provider.id);
+
+	res.status(200).json({
+		success: true,
+		data: result,
+	});
+});
+
 const updateOrderStatus: RequestHandler = catchAsync(async (req, res) => {
 	if (!req.user) {
 		throw new AppError(401, "Unauthorized");
@@ -197,4 +222,5 @@ export const providerController = {
 	deleteMeal,
 	getIncomingOrders,
 	updateOrderStatus,
+	getProviderAllOrders,
 };

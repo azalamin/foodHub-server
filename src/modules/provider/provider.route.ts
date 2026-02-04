@@ -18,6 +18,12 @@ router.get(
 	providerController.getIncomingOrders,
 );
 
+router.get(
+	"/provider/all-orders",
+	authMiddleware(UserRole.provider),
+	providerController.getProviderAllOrders,
+);
+
 router.patch(
 	"/provider/meals/:mealId",
 	authMiddleware(UserRole.provider),
