@@ -21,6 +21,18 @@ const createReview: RequestHandler = catchAsync(async (req, res) => {
 	});
 });
 
+const getReviewsByMeal: RequestHandler = catchAsync(async (req, res) => {
+	const { mealId } = req.params;
+	const result = await reviewService.getReviewsByMeal(mealId as string);
+
+	res.status(200).json({
+		success: true,
+		message: "Reviews fetched successfully",
+		data: result,
+	});
+});
+
 export const reviewController = {
 	createReview,
+	getReviewsByMeal,
 };

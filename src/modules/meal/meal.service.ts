@@ -82,12 +82,30 @@ const getAllMeals = async ({
 		orderBy: {
 			[sortBy]: sortOrder,
 		},
+		include: {
+			_count: { select: { reviews: true } },
+			reviews: true,
+		},
+	});
+
+	const mealsWithRating = meals.map(meal => {
+		const totalReviews = meal.reviews.length;
+
+		const averageRating =
+			totalReviews > 0 ? meal.reviews.reduce((acc, rev) => acc + rev.rating, 0) / totalReviews : 0;
+
+		const { reviews, ...mealData } = meal;
+
+		return {
+			...mealData,
+			averageRating: parseFloat(averageRating.toFixed(1)),
+		};
 	});
 
 	const total = await prisma.meal.count({ where });
 
 	return {
-		data: meals,
+		data: mealsWithRating,
 		pagination: {
 			total,
 			page,

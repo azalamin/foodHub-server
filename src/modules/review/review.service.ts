@@ -56,6 +56,45 @@ const createReview = async (customerId: string, payload: CreateReviewPayload) =>
 	return review;
 };
 
+const getReviewsByMeal = async (mealId: string) => {
+	const reviews = await prisma.review.findMany({
+		where: {
+			mealId: mealId,
+		},
+		include: {
+			customer: {
+				select: {
+					name: true,
+					image: true,
+				},
+			},
+		},
+		orderBy: {
+			createdAt: "desc",
+		},
+	});
+
+	// Calculate average rating
+	const aggregate = await prisma.review.aggregate({
+		where: { mealId },
+		_avg: {
+			rating: true,
+		},
+		_count: {
+			rating: true,
+		},
+	});
+
+	return {
+		reviews,
+		stats: {
+			averageRating: aggregate._avg.rating || 0,
+			totalReviews: aggregate._count.rating || 0,
+		},
+	};
+};
+
 export const reviewService = {
 	createReview,
+	getReviewsByMeal,
 };
