@@ -23,7 +23,7 @@ export const prisma = basePrisma.$extends({
 					if (!existingProfile) {
 						await basePrisma.providerProfile.create({
 							data: {
-								userId: user.id,
+								userId: user.id as string,
 								restaurantName: "",
 								address: "",
 								phone: "",
