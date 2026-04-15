@@ -6,11 +6,27 @@ enum OrderStatus {
     CANCELLED
 }
 
+enum PaymentStatus {
+    PENDING
+    PAID
+    FAILED
+    REFUNDED
+}
+
+enum PaymentMethod {
+    COD
+    CARD
+}
+
 model Order {
     id              String      @id @default(uuid())
     status          OrderStatus @default(PLACED)
     totalPrice      Float
     deliveryAddress String
+
+    paymentStatus         PaymentStatus @default(PENDING)
+    paymentMethod         PaymentMethod @default(COD)
+    stripePaymentIntentId String?
 
     customerId String
     providerId String
@@ -25,5 +41,6 @@ model Order {
     updatedAt DateTime @updatedAt
 
     @@index([id])
+    @@index([stripePaymentIntentId])
     @@map("order")
 }

@@ -9,6 +9,7 @@ import notFoundHandler from "./middlewares/notFoundHandler";
 import { categoryRoute } from "./modules/category/category.route";
 import { mealRoute } from "./modules/meal/meal.route";
 import { orderRoute } from "./modules/order/order.route";
+import { paymentRoute } from "./modules/payment/payment.route";
 import { providerRoute } from "./modules/provider/provider.route";
 import { reviewRoute } from "./modules/review/review.route";
 import { userRoute } from "./modules/user/user.route";
@@ -50,6 +51,9 @@ const allowedOrigins = [
 	"http://localhost:4000",
 	"http://localhost:5000",
 ].filter(Boolean);
+
+// Stripe webhook MUST be registered before express.json() to receive raw body
+app.use("/api", paymentRoute);
 
 app.use(express.json());
 
