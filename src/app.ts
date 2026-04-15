@@ -15,14 +15,7 @@ import { userRoute } from "./modules/user/user.route";
 
 const app: Application = express();
 
-// Configure CORS to allow both production and Vercel preview deployments
-const allowedOrigins = [
-	process.env.APP_URL || "http://localhost:4000",
-	process.env.PROD_APP_URL, // Production frontend URL
-	"http://localhost:3000",
-	"http://localhost:4000",
-	"http://localhost:5000",
-].filter(Boolean);
+app.set("trust proxy", 1);
 
 app.use(
 	cors({
@@ -48,6 +41,15 @@ app.use(
 		exposedHeaders: ["Set-Cookie"],
 	}),
 );
+
+// Configure CORS to allow both production and Vercel preview deployments
+const allowedOrigins = [
+	process.env.APP_URL || "http://localhost:4000",
+	process.env.PROD_APP_URL, // Production frontend URL
+	"http://localhost:3000",
+	"http://localhost:4000",
+	"http://localhost:5000",
+].filter(Boolean);
 
 app.use(express.json());
 

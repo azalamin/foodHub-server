@@ -21,13 +21,28 @@ export const auth = betterAuth({
 	advanced: {
 		cookiePrefix: "better-auth",
 		useSecureCookies: process.env.NODE_ENV === "production",
-		crossSubDomainCookies: {
-			enabled: true,
-		},
 		crossDomain: {
 			enabled: true,
 		},
-		disableCSRFCheck: true, // Allow requests without Origin header (Postman, mobile apps, etc.)
+		// Required for cross-domain OAuth: cookies must be SameSite=None so they are
+		// stored via cross-origin fetch (sign-in initiation) AND sent back when Google
+		// redirects to the backend callback (cross-site top-level navigation).
+		// Better Auth defaults to SameSite=Lax which fails in this split-domain setup.
+		defaultCookieAttributes: {
+			sameSite: "none",
+			secure: true,
+		},
+		disableCSRFCheck: true,
+	},
+
+	// With Prisma, Better Auth uses storeStateStrategy:"database" by default —
+	// OAuth state is stored in the verification table AND a signed CSRF cookie is set.
+	// The CSRF cookie cannot reliably reach the callback in a cross-domain setup
+	// (Chrome treats it as a third-party cookie and blocks it).
+	// skipStateCookieCheck:true removes that cookie dependency entirely:
+	// the state is still verified cryptographically from the database, which is secure.
+	account: {
+		skipStateCookieCheck: true,
 	},
 
 	socialProviders: {
