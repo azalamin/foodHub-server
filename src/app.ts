@@ -58,10 +58,10 @@ const allowedOrigins = [
 // Stripe webhook MUST be registered before express.json() to receive raw body
 app.use("/api", paymentWebhookRoute);
 
-app.use(express.json());
-
-// Better Auth
+// Better Auth route handler must be placed before express.json() to consume raw body stream
 app.all("/api/auth/*splat", toNodeHandler(auth));
+
+app.use(express.json());
 
 app.use("/api", paymentApiRoute);
 app.use("/api", mealRoute);
