@@ -11,7 +11,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
 const createPaymentIntent = async (userId: string, payload: CreateOrderPayload) => {
-	if (!payload.items || payload.items.length === 0) {
+	if (!payload || !payload.items || payload.items.length === 0) {
 		throw new AppError(400, "Order must contain at least one item");
 	}
 
@@ -65,10 +65,10 @@ const createPaymentIntent = async (userId: string, payload: CreateOrderPayload) 
 		include: { items: true },
 	});
 
-	// Create a Stripe PaymentIntent (amount in smallest unit, BDT uses paisa: multiply by 100)
+	// Create a Stripe PaymentIntent (amount in cents: multiply by 100)
 	const paymentIntent = await stripe.paymentIntents.create({
 		amount: Math.round(totalPrice * 100),
-		currency: "bdt",
+		currency: "usd",
 		metadata: {
 			orderId: order.id,
 			userId: user.id,
@@ -120,6 +120,7 @@ const handleWebhook = async (payload: Buffer, signature: string) => {
 					orderId: order.id,
 					totalPrice: order.totalPrice,
 					address: order.deliveryAddress,
+					paymentMethod: "CARD",
 				}),
 			);
 		}

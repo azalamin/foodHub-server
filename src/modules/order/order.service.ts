@@ -67,7 +67,7 @@ const createOrder = async (userId: string, payload: CreateOrderPayload) => {
 		},
 	});
 
-	// Send email safely
+	// Send order confirmation email
 	if (user.email) {
 		await transporter.sendMail(
 			orderConfirmationEmail({
@@ -75,6 +75,7 @@ const createOrder = async (userId: string, payload: CreateOrderPayload) => {
 				orderId: order.id,
 				totalPrice: order.totalPrice,
 				address: order.deliveryAddress,
+				paymentMethod: "COD",
 			}),
 		);
 	}

@@ -9,7 +9,10 @@ import notFoundHandler from "./middlewares/notFoundHandler";
 import { categoryRoute } from "./modules/category/category.route";
 import { mealRoute } from "./modules/meal/meal.route";
 import { orderRoute } from "./modules/order/order.route";
-import { paymentRoute } from "./modules/payment/payment.route";
+import {
+	paymentApiRoute,
+	paymentWebhookRoute,
+} from "./modules/payment/payment.route";
 import { providerRoute } from "./modules/provider/provider.route";
 import { reviewRoute } from "./modules/review/review.route";
 import { userRoute } from "./modules/user/user.route";
@@ -53,13 +56,14 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 // Stripe webhook MUST be registered before express.json() to receive raw body
-app.use("/api", paymentRoute);
+app.use("/api", paymentWebhookRoute);
 
 app.use(express.json());
 
 // Better Auth
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
+app.use("/api", paymentApiRoute);
 app.use("/api", mealRoute);
 app.use("/api", categoryRoute);
 app.use("/api", providerRoute);
