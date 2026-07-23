@@ -93,11 +93,18 @@ const getMyOrders = async (userId: string) => {
 			customerId: userId,
 		},
 		include: {
+			provider: {
+				select: {
+					id: true,
+					restaurantName: true,
+				},
+			},
 			items: {
 				include: {
 					meal: true,
 				},
 			},
+			review: true,
 		},
 		orderBy: {
 			createdAt: "desc",
