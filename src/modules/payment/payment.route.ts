@@ -17,6 +17,11 @@ apiRouter.post(
 	authMiddleware(UserRole.customer),
 	paymentController.createPaymentIntent,
 );
+apiRouter.post(
+	"/payments/confirm",
+	authMiddleware(UserRole.customer),
+	paymentController.confirmPayment,
+);
 
 export const paymentWebhookRoute = webhookRouter;
 export const paymentApiRoute = apiRouter;

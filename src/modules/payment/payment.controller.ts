@@ -13,6 +13,16 @@ const createPaymentIntent: RequestHandler = catchAsync(async (req, res) => {
 	res.status(201).json({ success: true, data: result });
 });
 
+const confirmPayment: RequestHandler = catchAsync(async (req, res) => {
+	if (!req.user) throw new AppError(401, "Unauthorized access");
+	if (req.user.role !== UserRole.CUSTOMER) throw new AppError(403, "Only customers can place orders");
+
+	const { orderId } = req.body;
+	const result = await paymentService.confirmPayment(req.user.id, orderId);
+
+	res.status(200).json({ success: true, data: result });
+});
+
 const stripeWebhook: RequestHandler = catchAsync(async (req, res) => {
 	const signature = req.headers["stripe-signature"] as string;
 
@@ -25,5 +35,6 @@ const stripeWebhook: RequestHandler = catchAsync(async (req, res) => {
 
 export const paymentController = {
 	createPaymentIntent,
+	confirmPayment,
 	stripeWebhook,
 };

@@ -68,7 +68,7 @@ const createPaymentIntent = async (userId: string, payload: CreateOrderPayload) 
 	// Create a Stripe PaymentIntent (amount in cents: multiply by 100)
 	const paymentIntent = await stripe.paymentIntents.create({
 		amount: Math.round(totalPrice * 100),
-		currency: "usd",
+		currency: "bdt",
 		metadata: {
 			orderId: order.id,
 			userId: user.id,
@@ -87,6 +87,63 @@ const createPaymentIntent = async (userId: string, payload: CreateOrderPayload) 
 		orderId: order.id,
 		totalPrice,
 	};
+};
+
+const confirmPayment = async (userId: string, orderId: string) => {
+	if (!orderId) {
+		throw new AppError(400, "Order ID is required");
+	}
+
+	const order = await prisma.order.findFirst({
+		where: {
+			id: orderId,
+			customerId: userId,
+		},
+		include: { customer: true },
+	});
+
+	if (!order) {
+		throw new AppError(404, "Order not found");
+	}
+
+	if (order.paymentStatus === PaymentStatus.PAID) {
+		return order;
+	}
+
+	if (!order.stripePaymentIntentId) {
+		throw new AppError(400, "Order does not have a Stripe PaymentIntent");
+	}
+
+	const paymentIntent = await stripe.paymentIntents.retrieve(order.stripePaymentIntentId);
+
+	if (paymentIntent.status === "succeeded") {
+		const updatedOrder = await prisma.order.update({
+			where: { id: order.id },
+			data: { paymentStatus: PaymentStatus.PAID },
+			include: { customer: true },
+		});
+
+		// Send confirmation email after payment confirmed
+		if (updatedOrder.customer?.email) {
+			try {
+				await transporter.sendMail(
+					orderConfirmationEmail({
+						email: updatedOrder.customer.email,
+						orderId: updatedOrder.id,
+						totalPrice: updatedOrder.totalPrice,
+						address: updatedOrder.deliveryAddress,
+						paymentMethod: "CARD",
+					}),
+				);
+			} catch (err) {
+				console.error("[Email Error]:", err);
+			}
+		}
+
+		return updatedOrder;
+	}
+
+	return order;
 };
 
 const handleWebhook = async (payload: Buffer, signature: string) => {
@@ -144,5 +201,6 @@ const handleWebhook = async (payload: Buffer, signature: string) => {
 
 export const paymentService = {
 	createPaymentIntent,
+	confirmPayment,
 	handleWebhook,
 };
