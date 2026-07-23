@@ -122,7 +122,7 @@ const confirmPayment = async (userId: string, orderId: string) => {
 
 	const paymentIntent = await stripe.paymentIntents.retrieve(order.stripePaymentIntentId);
 
-	if (paymentIntent.status === "succeeded") {
+	if (paymentIntent.status === "succeeded" || paymentIntent.status === "processing" || paymentIntent.amount_received > 0) {
 		const updatedOrder = await prisma.order.update({
 			where: { id: order.id },
 			data: { paymentStatus: PaymentStatus.PAID },
