@@ -65,15 +65,21 @@ const createPaymentIntent = async (userId: string, payload: CreateOrderPayload) 
 		include: { items: true },
 	});
 
-	// Create a Stripe PaymentIntent (amount in cents: multiply by 100)
+	// Convert BDT total price to USD cents for Stripe processing (1 USD = 120 BDT)
+	// Stripe minimum charge is $0.50 USD (50 cents)
+	const bdtToUsdRate = Number(process.env.BDT_TO_USD_RATE || 120);
+	const usdAmountCents = Math.max(50, Math.round((totalPrice / bdtToUsdRate) * 100));
+
+	// Create a Stripe PaymentIntent in USD
 	const paymentIntent = await stripe.paymentIntents.create({
-		amount: Math.round(totalPrice * 100),
-		currency: "bdt",
+		amount: usdAmountCents,
+		currency: "usd",
 		metadata: {
 			orderId: order.id,
 			userId: user.id,
+			originalAmountBdt: totalPrice.toString(),
 		},
-		description: `FoodHub order #${order.id}`,
+		description: `FoodHub order #${order.id} (৳${totalPrice} BDT)`,
 	});
 
 	// Save the PaymentIntent ID to the order
